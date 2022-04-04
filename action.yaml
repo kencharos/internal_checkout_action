@@ -1,21 +1,25 @@
 name: 'internal checkout'
 description: 'checkout private repo via github apps'
 inputs:
-  app_id:  #
+  app_id:
     description: 'github apps id'
     required: true
-  secret_key:  #
+  secret_key:
     description: 'github apps secret key'
     required: true
-  checkout_user:  #
+  checkout_user: 
     description: 'checkout repo org or user'
     required: true
-  checkout_repo:  #
+  checkout_repo: 
     description: 'checkout repo name'
     required: true
-  dist:  #
+  ref:  
+    description: 'check out ref, revision, branch, tag.'
+    required: false
+    default: ""
+  dist: 
     description: 'dist directory'
-    required: true
+    required: false
     default: "dist"
 runs:
   using: "composite"
@@ -40,4 +44,5 @@ runs:
       with:
         repository: ${{ inputs.checkout_user}}/${{ inputs.checkout_repo}}
         path: ${{inputs.dist}}
+        ref: ${{inputs.ref}}
         token: ${{steps.get_token.outputs.gh_token}}
