@@ -30,8 +30,43 @@ runs:
       run: echo "${{ inputs.secret_key }}" > ${RUNNER_TEMP}/private.pem
       shell: bash
     - id: get_token
-      run: ./issue_token.sh ${{ inputs.checkout_user}} ${{ inputs.app_id}} ${RUNNER_TEMP}/private.pem
       shell: bash
+      run: |
+        name=${{ inputs.checkout_user}}
+        github_app_id=${{ inputs.app_id}}
+        github_app_key_path=${RUNNER_TEMP}/private.pem
+
+        base64_option="-w 0"
+        header=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 ${base64_option})
+
+        now=$(date "+%s")
+        iat=$((${now} - 60))
+        exp=$((${now} + (10 * 60)))
+        payload=$(echo -n "{\"iat\":${iat},\"exp\":${exp},\"iss\":${github_app_id}}" | base64 ${base64_option})
+
+        unsigned_token="${header}.${payload}"
+
+        signed_token=$(echo -n "${unsigned_token}" | openssl dgst -binary -sha256 -sign "${github_app_key_path}" | base64 ${base64_option})
+
+        jwt="${unsigned_token}.${signed_token}"
+
+        installation_id=$(
+          curl -s -X GET \
+            -H "Authorization: Bearer ${jwt}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/app/installations" \
+          | jq -r ".[] | select(.account.login == \"${name}\" and .account.type == \"User\") | .id"
+        )
+
+        installation_token=$(
+          curl -s -X POST \
+            -H "Authorization: Bearer ${jwt}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/app/installations/${installation_id}/access_tokens" \
+          | jq -r ".token"
+        )
+
+        echo "::set-output name=gh_token::$(echo $installation_token)"
     - id: checkout
       uses: actions/checkout@v3
       with:
