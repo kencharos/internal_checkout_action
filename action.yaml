@@ -30,7 +30,7 @@ runs:
       run: echo "${{ inputs.secret_key }}" > ${RUNNER_TEMP}/private.pem
       shell: bash
     - id: get_token
-      run: issue_token.sh ${{ inputs.checkout_user}} ${{ inputs.app_id}} ${RUNNER_TEMP}/private.pem
+      run: ./issue_token.sh ${{ inputs.checkout_user}} ${{ inputs.app_id}} ${RUNNER_TEMP}/private.pem
       shell: bash
     - id: checkout
       uses: actions/checkout@v3
