@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -euox pipefail
-
 name=$1
 github_app_id=$2
 github_app_key=$3
