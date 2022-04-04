@@ -2,7 +2,7 @@
 
 name=$1
 github_app_id=$2
-github_app_key=$3
+github_app_key_path=$3
 
 base64_option="-w 0"
 #base64_option=""  # for macOS
@@ -14,8 +14,7 @@ exp=$((${now} + (10 * 60)))
 payload=$(echo -n "{\"iat\":${iat},\"exp\":${exp},\"iss\":${github_app_id}}" | base64 ${base64_option})
 
 unsigned_token="${header}.${payload}"
-github_app_key_path=$(mktemp)
-echo $github_app_key > ${github_app_key_path}
+
 signed_token=$(echo -n "${unsigned_token}" | openssl dgst -binary -sha256 -sign "${github_app_key_path}" | base64 ${base64_option})
 
 jwt="${unsigned_token}.${signed_token}"
