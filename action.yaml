@@ -24,7 +24,7 @@ runs:
       run: mkdir -p ${{ inputs.dist }}
       shell: bash
     - id: init-dep
-      run: sudo apt-get install -y jq base64 curl
+      run: sudo apt-get install -y jq curl
       shell: bash
     - id: get_token
       run: issue_token.sh ${{ inputs.checkout_user}} ${{ inputs.app_id}} ${{ inputs.secret_key}}
