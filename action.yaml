@@ -1,0 +1,37 @@
+name: 'internal checkout'
+description: 'checkout private repo via github apps'
+inputs:
+  app_id:  #
+    description: 'github apps id'
+    required: true
+  secret_key:  #
+    description: 'github apps secret key'
+    required: true
+  checkout_user:  #
+    description: 'checkout repo org or user'
+    required: true
+  checkout_repo:  #
+    description: 'checkout repo name'
+    required: true
+  dist:  #
+    description: 'dist directory'
+    required: true
+    default: "dist"
+runs:
+  using: "composite"
+  steps:
+    - id: init-dir
+      run: mkdir -p ${{ inputs.dist }}
+      shell: bash
+    - id: init-dep
+      run: apt-get install -y jq base64 curl
+      shell: bash
+    - id: get_token
+      run: issue_token.sh ${{ inputs.checkout_user}} ${{ inputs.app_id}} ${{ inputs.secret_key}}
+      shell: bash
+    - id: checkout
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.checkout_user}}/${{ inputs.checkout_repo}}
+        path: ${{inputs.dist}}
+        token: ${{steps.get_token.outputs.gh_token}}
